@@ -1,11 +1,7 @@
-import sys
-print("NO ELO")
-sys.stdout.flush()
-
-
 import RPi.GPIO as GPIO
 import time
 import w1thermsensor
+import sys
 
 from datetime import datetime
 
@@ -17,14 +13,15 @@ GPIO.setup(LODOWKA, GPIO.OUT) # GPIO Assign mode
 def log(a, on):
     now = datetime.now()
     t = now.strftime("%d/%m/%Y %H:%M:%S")
-    print(str(t) + ": " + "temperature=" + temp + " on=" + on)
-    sys.stdout.flush()
     try:
         file = open('./metrics.json', 'w')
-        metrics = dict(time=str(t), temperature=a, on=)
+        metrics = dict(time=str(t), temperature=a, on=on)
         json.dump(metrics, file)
-
-
+    except:
+        print ("Failed to log to file.")
+    print(str(t) + ": " + "temperature=" + temp + " on=" + on)
+    sys.stdout.flush()
+    
 
 while True:
     sensor = w1thermsensor.W1ThermSensor()
@@ -32,9 +29,11 @@ while True:
 
     if temp < 19:
         GPIO.output(lodowka, GPIO.LOW) # off
-        log(temp, 0)
+        log(temp, -1)
     elif temp > 21:
         GPIO.output(lodowka, GPIO.HIGH) # on
         log(temp, 1)
     else: 
+        log(temp, 0)
+
     time.sleep(5)
