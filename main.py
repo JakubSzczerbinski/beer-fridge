@@ -4,33 +4,37 @@ sys.stdout.flush()
 
 
 import RPi.GPIO as GPIO
+import time
+import w1thermsensor
+
+from datetime import datetime
+
+LODOWKA = 3
+
 GPIO.setmode(GPIO.BCM) # GPIO Numbers instead of board numbers
- 
-lodowka = 3
-GPIO.setup(lodowka, GPIO.OUT) # GPIO Assign mode
+GPIO.setup(LODOWKA, GPIO.OUT) # GPIO Assign mode
 
-
-def log(a):
-    from datetime import datetime
+def log(a, on):
     now = datetime.now()
     t = now.strftime("%d/%m/%Y %H:%M:%S")
-    print(str(t) + ": " + str(a))
+    print(str(t) + ": " + "temperature=" + temp + " on=" + on)
     sys.stdout.flush()
+    try:
+        file = open('./metrics.json', 'w')
+        metrics = dict(time=str(t), temperature=a, on=)
+        json.dump(metrics, file)
+
 
 
 while True:
-    import time
-    import w1thermsensor
     sensor = w1thermsensor.W1ThermSensor()
     temp = sensor.get_temperature()
-    log(temp)
 
     if temp < 19:
         GPIO.output(lodowka, GPIO.LOW) # off
-        log("turned off")
+        log(temp, 0)
     elif temp > 21:
         GPIO.output(lodowka, GPIO.HIGH) # on
-        log("turned on")
+        log(temp, 1)
     else: 
-        log("not changing state")
     time.sleep(5)
